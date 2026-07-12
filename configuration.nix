@@ -5,6 +5,6 @@
   nixpkgs.config.allowUnfree = true;
   nixpkgs.hostPlatform = "aarch64-darwin"; # use x86_64-darwin for Intel CPU
 
-  system.primaryUser = "Firmanc";
+  system.primaryUser = "firmannio";
   system.stateVersion = 6;
 }
