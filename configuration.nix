@@ -1,3 +1,5 @@
+{ user, ... }:
+
 {
   # Determinate already manages the Nix daemon, so nix-darwin shouldn't.
   nix.enable = false;
@@ -5,7 +7,10 @@
   nixpkgs.config.allowUnfree = true;
   nixpkgs.hostPlatform = "aarch64-darwin"; # use x86_64-darwin for Intel CPU
 
-  system.primaryUser = "firmannio";
+  system.primaryUser = user;
+  users.users.${user} = {
+    home = "/Users/${user}";
+  };
   system.stateVersion = 6;
   system.defaults = {
     NSGlobalDomain = {
@@ -21,40 +26,24 @@
     trackpad.Clicking = true;              # tap to click
   };
 
-  # nix-homebrew = {
-  #   # Install Homebrew under the default prefix
-  #   enable = true;
+  nix-homebrew = {
+    # Install Homebrew under the default prefix
+    enable = true;
 
-  #   # Apple Silicon Only: Also install Homebrew under the default Intel prefix for Rosetta 2
-  #   enableRosetta = true;
+    # Apple Silicon Only: Also install Homebrew under the default Intel prefix for Rosetta 2
+    enableRosetta = true;
 
-  #   # User owning the Homebrew prefix
-  #   user = "firmannio";
+    # User owning the Homebrew prefix
+    inherit user;
+  };
 
-  #   # Optional: Declarative tap management
-  #   # taps = {
-  #   #   "homebrew/homebrew-core" = homebrew-core;
-  #   #   "homebrew/homebrew-cask" = homebrew-cask;
-  #   # };
-
-  #   # Optional: Enable fully-declarative tap management
-  #   #
-  #   # With mutableTaps disabled, taps can no longer be added imperatively with `brew tap`.
-  #   # mutableTaps = false;
-
-  #   autoMigrate = true;
-
-  #   # Optional: Declarative Homebrew tap trust entries.
-  #   #
-  #   # Note: The trust entries are _not_ removed if you remove them from those lists!
-  #   # Use the `brew untrust` command to remove a trust entry.
-  #   trust = {
-  #     formulae = [ ];
-  #     casks = [
-  #       "wezterm"
-  #     ];
-  #     commands = [ ];
-  #     taps = [ ];
-  #   };
-  # };
+  homebrew = {
+    enable = true;
+    onActivation.cleanup = "zap";
+    onActivation.autoUpdate = true;
+    onActivation.extraFlags = [ "--force" ];
+    casks = [
+      "wezterm"
+    ];
+  };
 }

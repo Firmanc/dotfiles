@@ -4,25 +4,33 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-26.05-darwin";
     nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-26.05";
-    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
 
+    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
+
+    home-manager.url = "github:nix-community/home-manager/release-26.05";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = inputs@{ self, nix-darwin, nixpkgs }: {
+  outputs = inputs@{ self, nix-darwin, nixpkgs, nix-homebrew, home-manager, ... }:
+  let 
+    # The one username line to change if this isn't your machine.
+    # bootstrap.sh offers to rewrite this for you if your macOS username differs.
+    user = "firmannio";
+  in
+  {
     darwinConfigurations."macbook" = nix-darwin.lib.darwinSystem {
+      specialArgs = { inherit user; };
       modules = [
-        nix-homebrew.darwinModules.nix-homebrew
-        {
-          nix-homebrew = {
-            enable = true;
-            # Apple Silicon typically uses /opt/homebrew, Intel uses /usr/local
-            user = "firmannio"; 
-
-            autoMigrate = true;
-          };
-        }
         ./configuration.nix
+        nix-homebrew.darwinModules.nix-homebrew
+        home-manager.darwinModules.home-manager
+        {
+          home-manager.useGlobalPkgs = true;
+          home-manager.useUserPackages = true;
+          home-manager.extraSpecialArgs = { inherit user; };
+          home-manager.users.${user} = import ./home.nix;
+        }
       ];
     };
   };
